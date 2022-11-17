@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * Transaction service implementation.
+ */
 @Service
 public class TransactionServiceImpl implements ITransactionService {
 
