@@ -2,14 +2,17 @@ package com.nttdata.banco.service.implementation;
 
 import com.nttdata.banco.model.Client;
 import com.nttdata.banco.repository.ClientRepository;
-import com.nttdata.banco.service.IClientService;
+import com.nttdata.banco.service.IclientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * Client service implementation.
+ */
 @Service
-public class ClientServiceImpl implements IClientService {
+public class ClientServiceImpl implements IclientService {
 
     @Autowired
     ClientRepository clientRepository;
