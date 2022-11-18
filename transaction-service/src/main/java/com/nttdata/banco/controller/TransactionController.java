@@ -1,5 +1,6 @@
 package com.nttdata.banco.controller;
 
+import com.nttdata.banco.dto.TransactionBetweenAccountsDto;
 import com.nttdata.banco.model.Transaction;
 import com.nttdata.banco.service.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,5 +63,26 @@ public class TransactionController {
     @ResponseStatus(HttpStatus.OK)
     public Mono<Void> delete(@PathVariable("id") String id) {
         return transactionService.delete(id);
+    }
+
+    //Method to make a deposit
+    @PostMapping("/deposit")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<Transaction> doDeposit(@RequestBody Transaction transaction) {
+        return  transactionService.doDeposit(transaction);
+    }
+
+    //Method to make a withdrawl
+    @PostMapping("/withdrawl")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<Transaction> doWithdrawl(@RequestBody Transaction transaction) {
+        return  transactionService.doWithdrawl(transaction);
+    }
+
+    //Method to make a transaction between accounts
+    @PostMapping("/tba")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<Transaction> doTransactionBetweenAccounts(@RequestBody TransactionBetweenAccountsDto tBetweenDto) {
+        return  transactionService.doTransactionBetweenAccounts(tBetweenDto);
     }
 }
