@@ -7,7 +7,9 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-
+/**
+ * Account Type Document.
+ */
 @Getter
 @Setter
 @AllArgsConstructor
