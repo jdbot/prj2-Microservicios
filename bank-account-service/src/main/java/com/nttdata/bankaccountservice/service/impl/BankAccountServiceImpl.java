@@ -1,20 +1,21 @@
 package com.nttdata.bankaccountservice.service.impl;
 
-import com.nttdata.bankaccountservice.document.AccountType;
 import com.nttdata.bankaccountservice.document.BankAccount;
-import com.nttdata.bankaccountservice.dto.BankAccountDTO;
 import com.nttdata.bankaccountservice.dto.ClientDTO;
+import com.nttdata.bankaccountservice.repository.BankAccountRepository;
 import com.nttdata.bankaccountservice.service.AccountTypeService;
+import com.nttdata.bankaccountservice.service.BankAccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import com.nttdata.bankaccountservice.repository.BankAccountRepository;
-import com.nttdata.bankaccountservice.service.BankAccountService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
+/**
+ * Bank Account Service Implementation.
+ */
 @Service
 public class BankAccountServiceImpl implements BankAccountService {
 

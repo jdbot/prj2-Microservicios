@@ -4,6 +4,9 @@ import com.nttdata.banco.model.Transaction;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * Transaction service interface.
+ */
 public interface ITransactionService {
 
 

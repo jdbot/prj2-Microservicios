@@ -4,7 +4,10 @@ import com.nttdata.banco.model.Client;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface IClientService {
+/**
+ * Client service interface.
+ */
+public interface IclientService {
 
     public Flux<Client> findAll();
 
