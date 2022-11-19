@@ -1,6 +1,8 @@
 package com.nttdata.bankaccountservice.controller;
 
+import com.nttdata.bankaccountservice.document.AccountType;
 import com.nttdata.bankaccountservice.document.BankAccount;
+import com.nttdata.bankaccountservice.dto.ClientDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +50,18 @@ public class BankAccountController {
     @ResponseStatus(HttpStatus.OK)
     public Mono<Void> delete(@PathVariable("id") String id){
         return bankAccountService.delete(id);
+    }
+
+    @GetMapping("/findClientById/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<ClientDTO> findByClientId(@PathVariable("id") String id){
+        return bankAccountService.findClientById(id);
+    }
+
+    @GetMapping("/findByCustomerIdAndType/{id}/{type}")
+    @ResponseStatus(HttpStatus.OK)
+    public Flux<BankAccount> findByCustomerIdAndType(@PathVariable("id") String customerId, @PathVariable("type") String type){
+        return bankAccountService.findByCustomerIdAndType(customerId, type);
     }
 
 }

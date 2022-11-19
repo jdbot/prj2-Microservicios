@@ -17,6 +17,7 @@ public class AccountType {
 
     @Id
     private String id;
+    private String code;
     private String name;
     private String isCommission;
     private String isLimit;
