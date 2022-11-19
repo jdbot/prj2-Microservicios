@@ -30,4 +30,7 @@ public class BankAccount {
     //@DocumentReference
     //type of the bank account
     private String type;
+
+    //quantity of transactions done by the account
+    private int numberOfTransactions;
 }

@@ -62,6 +62,7 @@ public class BankAccountServiceImpl implements BankAccountService {
             float newAmount = x.getAmount() + transaction.getAmount();
             transaction.setType("deposit");
             x.setAmount(newAmount);
+            x.setNumberOfTransactions(x.getNumberOfTransactions()+1);
             return this.webClient.post().uri("/transaction/").
                     header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).
                     body(Mono.just(transaction), Transaction.class).
@@ -78,6 +79,7 @@ public class BankAccountServiceImpl implements BankAccountService {
             if( newAmount >= 0) {
                 transaction.setType("withdrawl");
                 x.setAmount(newAmount);
+                x.setNumberOfTransactions(x.getNumberOfTransactions()+1);
                 return this.webClient.post().uri("/transaction/").
                         header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).
                         body(Mono.just(transaction), Transaction.class).
@@ -95,18 +97,5 @@ public class BankAccountServiceImpl implements BankAccountService {
         Transaction tSender = new Transaction(t.getTransactionDate(), t.getAmount(), "withdrawl", t.getSenderAccountId());
         Transaction tReceptor = new Transaction(t.getTransactionDate(), t.getAmount(), "deposit", t.getReceptorAccountId());
         return doWithdrawl(tSender).flatMap(x -> doDeposit(tReceptor));
-        /*return this.webClient.get().uri("/transaction/tba", t).retrieve().bodyToMono(Transaction.class).flatMap(x -> {
-
-            findById(t.getSenderAccountId()).flatMap(x -> {
-                x.setAmount(x.getAmount()-t.getAmount());
-                return update(x);
-            });
-
-            return findById(t.getReceptorAccountId()).flatMap(x -> {
-                x.setAmount(x.getAmount()-t.getAmount());
-                return update(x);
-            });
-
-        });*/
     }
 }
