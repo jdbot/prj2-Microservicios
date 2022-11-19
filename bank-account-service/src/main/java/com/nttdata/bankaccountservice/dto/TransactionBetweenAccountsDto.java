@@ -1,4 +1,4 @@
-package com.nttdata.banco.dto;
+package com.nttdata.bankaccountservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +14,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class TransactionBetweenAccountsDto {
 
+    private String transactionDate;
     private String senderAccountId;
     private String receptorAccountId;
-    private float ammount;
+    private float amount;
 }

@@ -1,6 +1,8 @@
 package com.nttdata.bankaccountservice.controller;
 
 import com.nttdata.bankaccountservice.document.BankAccount;
+import com.nttdata.bankaccountservice.document.Transaction;
+import com.nttdata.bankaccountservice.dto.TransactionBetweenAccountsDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -49,5 +51,27 @@ public class BankAccountController {
     public Mono<Void> delete(@PathVariable("id") String id){
         return bankAccountService.delete(id);
     }
+
+    //Method to do a deposit
+    @PutMapping("/deposit")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<BankAccount> doDeposit(@RequestBody Transaction transaction) {
+        return bankAccountService.doDeposit(transaction);
+    }
+
+    //Method to do a withdrawl
+    @PutMapping("/withdrawl")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<BankAccount> doWithdrawl(@RequestBody Transaction transaction) {
+        return bankAccountService.doWithdrawl(transaction);
+    }
+
+    //Method to do a transaction beetwen accounts
+    @PutMapping("/tba")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<BankAccount> doTransactionBetweenAccounts(@RequestBody TransactionBetweenAccountsDto tba) {
+        return bankAccountService.doTransactionBetweenAccounts(tba);
+    }
+
 
 }
