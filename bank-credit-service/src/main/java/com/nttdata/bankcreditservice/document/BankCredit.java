@@ -21,6 +21,8 @@ public class BankCredit {
     private String numberCredit;
     //amount of the bank credit
     private Float amount;
+    //credit
+    private Float credit;
     //end date of the bank credit
     private String endDate;
     //id of the client

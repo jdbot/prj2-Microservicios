@@ -25,7 +25,11 @@ public class Transaction {
     private float amount;
     //Transaction's type: Deposit or Withdrawl
     private String type;
+    //Associated client's ID
+    private String idClient;
     //Associated account's ID
     private String idAccount;
+    //Associated account's amount after transaction
+    private float accountAmount;
 
 }

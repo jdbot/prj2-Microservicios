@@ -12,4 +12,6 @@ import reactor.core.publisher.Flux;
 public interface TransactionRepository extends ReactiveMongoRepository<Transaction, String> {
 
     Flux<Transaction> findAllByIdAccount(String idAccount);
+
+    Flux<Transaction> findAllByIdClient(String idClient);
 }

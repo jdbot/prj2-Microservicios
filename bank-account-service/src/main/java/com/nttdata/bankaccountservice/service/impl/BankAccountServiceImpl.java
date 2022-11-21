@@ -61,6 +61,8 @@ public class BankAccountServiceImpl implements BankAccountService {
         return findById(transaction.getIdAccount()).flatMap(x -> {
             float newAmount = x.getAmount() + transaction.getAmount();
             transaction.setType("deposit");
+            transaction.setIdClient(x.getCustomerId());
+            transaction.setAccountAmount(newAmount);
             x.setAmount(newAmount);
             x.setNumberOfTransactions(x.getNumberOfTransactions()+1);
             return this.webClient.post().uri("/transaction/").
@@ -78,6 +80,8 @@ public class BankAccountServiceImpl implements BankAccountService {
             float newAmount = x.getAmount() - transaction.getAmount();
             if( newAmount >= 0) {
                 transaction.setType("withdrawl");
+                transaction.setIdClient(x.getCustomerId());
+                transaction.setAccountAmount(newAmount);
                 x.setAmount(newAmount);
                 x.setNumberOfTransactions(x.getNumberOfTransactions()+1);
                 return this.webClient.post().uri("/transaction/").
@@ -94,8 +98,8 @@ public class BankAccountServiceImpl implements BankAccountService {
 
     @Override
     public Mono<BankAccount> doTransactionBetweenAccounts(TransactionBetweenAccountsDto t) {
-        Transaction tSender = new Transaction(t.getTransactionDate(), t.getAmount(), "withdrawl", t.getSenderAccountId());
-        Transaction tReceptor = new Transaction(t.getTransactionDate(), t.getAmount(), "deposit", t.getReceptorAccountId());
+        Transaction tSender = new Transaction(t.getTransactionDate(), t.getAmount(), "withdrawl",null, t.getSenderAccountId(), 0);
+        Transaction tReceptor = new Transaction(t.getTransactionDate(), t.getAmount(), "deposit", null, t.getReceptorAccountId(), 0);
         return doWithdrawl(tSender).flatMap(x -> doDeposit(tReceptor));
     }
 }
