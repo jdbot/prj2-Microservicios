@@ -29,11 +29,13 @@ public class BankAccount {
     private String customerId;
     //full name of the client
     private String customerName;
-
-    //@DocumentReference
     //type of the bank account
     private String type;
-
     //quantity of transactions done by the account
     private int numberOfTransactions;
+    //Commission of the bank account
+    private Integer commission;
+    //transaction limit of the bank account
+    private Integer transactionLimit;
+
 }

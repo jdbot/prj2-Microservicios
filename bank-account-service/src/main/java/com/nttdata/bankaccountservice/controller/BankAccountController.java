@@ -65,13 +65,15 @@ public class BankAccountController {
         return bankAccountService.delete(id);
     }
 
-    @GetMapping("/findClientById/{id}")
+    //Method to get a client by ID
+    // @GetMapping("/findClientById/{id}")
     @ResponseStatus(HttpStatus.OK)
     @CircuitBreaker(name="client", fallbackMethod = "fallBackGetFindByClientId")
     public Mono<ClientDTO> findByClientId(@PathVariable("id") String id) {
         return bankAccountService.findClientById(id);
     }
 
+    //Method to get a bank account by clientId and type
     @GetMapping("/findByCustomerIdAndType/{id}/{type}")
     @ResponseStatus(HttpStatus.OK)
     public Flux<BankAccount> findByCustomerIdAndType(@PathVariable("id") String customerId,
@@ -79,8 +81,10 @@ public class BankAccountController {
         return bankAccountService.findByCustomerIdAndType(customerId, type);
     }
 
+    //Method fallback to client microservice
     public Mono<String> fallBackGetFindByClientId(String id, RuntimeException runtimeException){
-        return Mono.just("Microservicio Client no esta respondiendo");
+        return Mono.just("the client microservice is not responding");
+//        return Mono.just("limiter client timeout");
     }
 
     //Method to do a deposit
@@ -97,7 +101,7 @@ public class BankAccountController {
         return bankAccountService.doWithdrawl(transaction);
     }
 
-    //Method to do a transaction beetwen accounts
+    //Method to do a transaction between accounts
     @PutMapping("/tba")
     @ResponseStatus(HttpStatus.OK)
     public Mono<BankAccount> doTransactionBetweenAccounts(@RequestBody TransactionBetweenAccountsDto tba) {

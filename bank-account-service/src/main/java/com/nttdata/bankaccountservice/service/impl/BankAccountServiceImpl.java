@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+
 /**
  * Bank Account Service Implementation.
  */
@@ -42,7 +44,6 @@ public class BankAccountServiceImpl implements BankAccountService {
 
     @Override
     public Mono<BankAccount> register(BankAccount bankAccount) {
-//        return validateRegister(bankAccount).switchIfEmpty(this.bankAccountRepository.save(bankAccount));
         return this.bankAccountRepository.save(bankAccount);
     }
 
@@ -69,9 +70,9 @@ public class BankAccountServiceImpl implements BankAccountService {
     @Override
     public Mono<ClientDTO> findClientById(String clientId) {
         LOGGER.info("Consulted client from the bank-account-service");
-        Mono<ClientDTO> client =this.webClient.build().get().uri("/client/{id}", clientId)
+        Mono<ClientDTO> client = this.webClient.build().get().uri("/client/{id}", clientId)
                 .retrieve().bodyToMono(ClientDTO.class);
-        LOGGER.info("Consulted client from the bank-account-service");
+//                .delayElement(Duration.ofSeconds(5)); // testing the timeout de 2s
         return client;
     }
 
@@ -81,19 +82,12 @@ public class BankAccountServiceImpl implements BankAccountService {
             .retrieve()
             .bodyToMono(ClientDTO.class)
             .flatMap(dc -> {
-                if (dc.getType().equals("personal")) {
-                    return findByCAndT(bankAccount.getCustomerId(), bankAccount.getType())
-                        .flatMap(x-> {
-                            LOGGER.error("ya existe este tipo de cuenta bancaria para este cliente");
-                            throw new RuntimeException("ya existe este tipo de cuenta bancaria para este cliente");
-                        });
-                } else {
+                if (dc.getType().equals("business")) {
                     return this.accountTypeService.findById(bankAccount.getType()).filter(obj ->
-                        obj.getCode().equals("1") || obj.getCode().equals("2"))
-                            .flatMap(x-> {
-                                LOGGER.error("Cliente de tipo empresarial solo puede crear cuentas corrientes");
-                                throw new RuntimeException("Cliente de tipo empresarial solo puede crear cuentas corrientes");
-                            });
+                        obj.getCode().equals("3"))
+                        .flatMap(x-> register(bankAccount));
+                } else {
+                    return Mono.empty();
                 }
 
             });
@@ -105,12 +99,11 @@ public class BankAccountServiceImpl implements BankAccountService {
                 customerId, type);
     }
 
-    public Mono<BankAccount> findByCAndT(String customerId, String type){
+    public Mono<BankAccount> validateBankAccount(String customerId, String type){
         LOGGER.info("validateBankAccount");
-        Flux<BankAccount> baf = this.bankAccountRepository.findByCustomerIdAndType(
-                customerId, type);
-        Mono<BankAccount> bam = baf.next();
-        return bam;
+        return this.bankAccountRepository.findByCustomerIdAndType(
+            customerId, type)
+            .next();
     }
 
     public Mono<BankAccount> doDeposit(Transaction transaction) {
@@ -145,7 +138,7 @@ public class BankAccountServiceImpl implements BankAccountService {
                         body(Mono.just(transaction), Transaction.class).
                         retrieve().
                         bodyToMono(Transaction.class).
-                        flatMap(y -> update(x));
+                        flatMap(y -> update(x).flatMap(z->doCommission(transaction)));
             }else{
                 return Mono.empty();
             }
@@ -156,5 +149,24 @@ public class BankAccountServiceImpl implements BankAccountService {
         Transaction tSender = new Transaction(t.getTransactionDate(), t.getAmount(), "withdrawl",null, t.getSenderAccountId(), 0);
         Transaction tReceptor = new Transaction(t.getTransactionDate(), t.getAmount(), "deposit", null, t.getReceptorAccountId(), 0);
         return doWithdrawl(tSender).flatMap(x -> doDeposit(tReceptor));
+    }
+    @Override
+    public Mono<BankAccount> doCommission(Transaction transaction) {
+        return findById(transaction.getIdAccount()).flatMap(x -> {
+            if( x.getNumberOfTransactions() + 1 > x.getTransactionLimit()) {
+                float newAmount = x.getAmount() - x.getCommission();
+                transaction.setType("commission");
+                transaction.setIdClient(x.getCustomerId());
+                transaction.setAccountAmount(newAmount);
+                return this.webClient.build().post().uri("/transaction/").
+                    header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).
+                    body(Mono.just(transaction), Transaction.class).
+                    retrieve().
+                    bodyToMono(Transaction.class).
+                    flatMap(y -> update(x));
+            } else {
+                return Mono.empty();
+            }
+        });
     }
 }

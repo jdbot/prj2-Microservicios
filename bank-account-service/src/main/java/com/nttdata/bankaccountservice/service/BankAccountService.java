@@ -29,7 +29,12 @@ public interface BankAccountService {
     Flux<BankAccount> findByCustomerIdAndType(String customerId, String type);
 
     Mono<BankAccount> validateRegister(BankAccount bankAccount);
+
     Mono<BankAccount> doDeposit(Transaction transaction);
+
     Mono<BankAccount> doWithdrawl(Transaction transaction);
+
     Mono<BankAccount> doTransactionBetweenAccounts(TransactionBetweenAccountsDto t);
+
+    Mono<BankAccount> doCommission(Transaction transaction);
 }
