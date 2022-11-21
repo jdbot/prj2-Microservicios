@@ -63,4 +63,11 @@ public class TransactionController {
     public Mono<Void> delete(@PathVariable("id") String id) {
         return transactionService.delete(id);
     }
+
+    //Method to get all the transactions of an account
+    @GetMapping("/account/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Flux<Transaction> findTransactionsByAccountId(@PathVariable("id") String accountId) {
+        return transactionService.findTransactionsByAccountId(accountId);
+    }
 }

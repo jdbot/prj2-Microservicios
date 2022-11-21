@@ -1,8 +1,9 @@
 package com.nttdata.bankaccountservice.service;
 
-import com.nttdata.bankaccountservice.document.AccountType;
 import com.nttdata.bankaccountservice.document.BankAccount;
 import com.nttdata.bankaccountservice.dto.ClientDTO;
+import com.nttdata.bankaccountservice.document.Transaction;
+import com.nttdata.bankaccountservice.dto.TransactionBetweenAccountsDto;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -28,6 +29,7 @@ public interface BankAccountService {
     Flux<BankAccount> findByCustomerIdAndType(String customerId, String type);
 
     Mono<BankAccount> validateRegister(BankAccount bankAccount);
-
-
+    Mono<BankAccount> doDeposit(Transaction transaction);
+    Mono<BankAccount> doWithdrawl(Transaction transaction);
+    Mono<BankAccount> doTransactionBetweenAccounts(TransactionBetweenAccountsDto t);
 }

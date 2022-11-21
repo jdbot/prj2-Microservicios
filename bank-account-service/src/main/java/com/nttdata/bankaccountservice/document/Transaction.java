@@ -1,24 +1,15 @@
-package com.nttdata.banco.model;
+package com.nttdata.bankaccountservice.document;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-/**
- * Transaction document.
- */
 @Getter
 @AllArgsConstructor
 @Setter
 @NoArgsConstructor
-@Document (collection = "transactions")
 public class Transaction {
-    @Id
-    public String id;
-
     //Date of the transaction
     private String transactionDate;
     //Amount of the transaction
@@ -31,5 +22,4 @@ public class Transaction {
     private String idAccount;
     //Associated account's amount after transaction
     private float accountAmount;
-
 }

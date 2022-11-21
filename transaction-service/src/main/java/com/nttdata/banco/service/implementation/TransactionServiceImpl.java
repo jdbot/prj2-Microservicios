@@ -1,5 +1,6 @@
 package com.nttdata.banco.service.implementation;
 
+import com.nttdata.banco.dto.AmountAvgDto;
 import com.nttdata.banco.model.Transaction;
 import com.nttdata.banco.repository.TransactionRepository;
 import com.nttdata.banco.service.ITransactionService;
@@ -13,7 +14,6 @@ import reactor.core.publisher.Mono;
  */
 @Service
 public class TransactionServiceImpl implements ITransactionService {
-
     @Autowired
     TransactionRepository transactionRepository;
 
@@ -41,4 +41,16 @@ public class TransactionServiceImpl implements ITransactionService {
     public Mono<Transaction> findById(String id) {
         return transactionRepository.findById(id);
     }
+
+    @Override
+    public Flux<Transaction> findTransactionsByAccountId(String idAccount) {
+        return transactionRepository.findAllByIdAccount(idAccount);
+    }
+
+    @Override
+    public Flux<AmountAvgDto> makeAmountAvgReport(String idClient) {
+        return null;
+    }
+
+
 }

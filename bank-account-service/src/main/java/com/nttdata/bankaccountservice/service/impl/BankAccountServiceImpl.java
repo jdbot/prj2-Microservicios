@@ -2,6 +2,13 @@ package com.nttdata.bankaccountservice.service.impl;
 
 import com.nttdata.bankaccountservice.document.BankAccount;
 import com.nttdata.bankaccountservice.dto.ClientDTO;
+import com.nttdata.bankaccountservice.document.Transaction;
+import com.nttdata.bankaccountservice.dto.TransactionBetweenAccountsDto;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import com.nttdata.bankaccountservice.repository.BankAccountRepository;
 import com.nttdata.bankaccountservice.service.AccountTypeService;
 import com.nttdata.bankaccountservice.service.BankAccountService;
@@ -9,9 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * Bank Account Service Implementation.
@@ -30,11 +34,6 @@ public class BankAccountServiceImpl implements BankAccountService {
 
     @Autowired
     private AccountTypeService accountTypeService;
-
-//    public BankAccountServiceImpl(WebClient.Builder webClientBuilder) {
-//        this.webClient = webClientBuilder.baseUrl("http://localhost:8090").build();
-////        this.webClient = webClientBuilder.baseUrl("http://client-service").build();
-//    }
 
     @Override
     public Flux<BankAccount> findAll() {
@@ -100,52 +99,6 @@ public class BankAccountServiceImpl implements BankAccountService {
             });
     }
 
-//        LOGGER.info("validateClientPersonal");
-//        return client.handle((c, validClientEmpType) -> {
-//            if (c.getType().equals("personal") & bam != null ) {
-//                LOGGER.error("ya existe este tipo de cuenta bancaria para este cliente");
-//                validClientEmpType.error( new RuntimeException("validacion 1"));
-//            } else {
-//                LOGGER.info("validateClientPersonal ok");
-//                validClientEmpType.next(c);
-//            }
-//        });
-//    }
-
-    /*
-    public Mono<ClientDTO> validateClientPersonal(Mono<ClientDTO> client, String customerId, String type){
-        Flux<BankAccount> baf = this.bankAccountRepository.findByCustomerIdAndType(
-                customerId, type);
-        Mono<BankAccount> bam = baf.next();
-
-        LOGGER.info("validateClientPersonal");
-        return client.handle((c, validClientEmpType) -> {
-            if (c.getType().equals("personal") & bam != null ) {
-                LOGGER.error("ya existe este tipo de cuenta bancaria para este cliente");
-                validClientEmpType.error( new RuntimeException("validacion 1"));
-            } else {
-                LOGGER.info("validateClientPersonal ok");
-                validClientEmpType.next(c);
-            }
-        });
-    }
-
-    public Mono<ClientDTO> validateClientEmpresarial(Mono<ClientDTO> client, String type){
-        Mono<AccountType> atm = this.accountTypeService.findById(type).filter(obj ->
-                obj.getCode().equals("1") || obj.getCode().equals("2")
-        );
-        LOGGER.info("validateClientEmpresarial "+client);
-        return client.handle((c, validClientEmpType) -> {
-            if (c.getType().equals("empresarial") & atm != null ) {
-                LOGGER.error("Cliente de tipo empresarial solo puede crear cuentas corrientes");
-                validClientEmpType.error( new RuntimeException("validacion 2"));
-            } else {
-                LOGGER.info("validateClientEmpresarial ok");
-                validClientEmpType.next(c);
-            }
-        });
-    }*/
-
     @Override
     public Flux<BankAccount> findByCustomerIdAndType(String customerId, String type){
         return this.bankAccountRepository.findByCustomerIdAndType(
@@ -160,6 +113,48 @@ public class BankAccountServiceImpl implements BankAccountService {
         return bam;
     }
 
+    public Mono<BankAccount> doDeposit(Transaction transaction) {
+        return findById(transaction.getIdAccount()).flatMap(x -> {
+            float newAmount = x.getAmount() + transaction.getAmount();
+            transaction.setType("deposit");
+            transaction.setIdClient(x.getCustomerId());
+            transaction.setAccountAmount(newAmount);
+            x.setAmount(newAmount);
+            x.setNumberOfTransactions(x.getNumberOfTransactions()+1);
+            return this.webClient.build().post().uri("/transaction/").
+                    header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).
+                    body(Mono.just(transaction), Transaction.class).
+                    retrieve().
+                    bodyToMono(Transaction.class).
+                    flatMap(y -> update(x));
+        });
+    }
 
-
+    @Override
+    public Mono<BankAccount> doWithdrawl(Transaction transaction) {
+        return findById(transaction.getIdAccount()).flatMap(x -> {
+            float newAmount = x.getAmount() - transaction.getAmount();
+            if( newAmount >= 0) {
+                transaction.setType("withdrawl");
+                transaction.setIdClient(x.getCustomerId());
+                transaction.setAccountAmount(newAmount);
+                x.setAmount(newAmount);
+                x.setNumberOfTransactions(x.getNumberOfTransactions()+1);
+                return this.webClient.build().post().uri("/transaction/").
+                        header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).
+                        body(Mono.just(transaction), Transaction.class).
+                        retrieve().
+                        bodyToMono(Transaction.class).
+                        flatMap(y -> update(x));
+            }else{
+                return Mono.empty();
+            }
+        });
+    }
+    @Override
+    public Mono<BankAccount> doTransactionBetweenAccounts(TransactionBetweenAccountsDto t) {
+        Transaction tSender = new Transaction(t.getTransactionDate(), t.getAmount(), "withdrawl",null, t.getSenderAccountId(), 0);
+        Transaction tReceptor = new Transaction(t.getTransactionDate(), t.getAmount(), "deposit", null, t.getReceptorAccountId(), 0);
+        return doWithdrawl(tSender).flatMap(x -> doDeposit(tReceptor));
+    }
 }
