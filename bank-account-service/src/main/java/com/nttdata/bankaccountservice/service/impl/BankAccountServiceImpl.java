@@ -21,7 +21,9 @@ public class BankAccountServiceImpl implements BankAccountService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BankAccountServiceImpl.class);
 
-    private final WebClient webClient;
+
+    @Autowired
+    private WebClient.Builder webClient;
 
     @Autowired
     private BankAccountRepository bankAccountRepository;
@@ -29,9 +31,10 @@ public class BankAccountServiceImpl implements BankAccountService {
     @Autowired
     private AccountTypeService accountTypeService;
 
-    public BankAccountServiceImpl(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("http://localhost:8080").build();
-    }
+//    public BankAccountServiceImpl(WebClient.Builder webClientBuilder) {
+//        this.webClient = webClientBuilder.baseUrl("http://localhost:8090").build();
+////        this.webClient = webClientBuilder.baseUrl("http://client-service").build();
+//    }
 
     @Override
     public Flux<BankAccount> findAll() {
@@ -40,6 +43,7 @@ public class BankAccountServiceImpl implements BankAccountService {
 
     @Override
     public Mono<BankAccount> register(BankAccount bankAccount) {
+//        return validateRegister(bankAccount).switchIfEmpty(this.bankAccountRepository.save(bankAccount));
         return this.bankAccountRepository.save(bankAccount);
     }
 
@@ -66,10 +70,47 @@ public class BankAccountServiceImpl implements BankAccountService {
     @Override
     public Mono<ClientDTO> findClientById(String clientId) {
         LOGGER.info("Consulted client from the bank-account-service");
-        Mono<ClientDTO> client =this.webClient.get().uri("/client/{id}", clientId)
+        Mono<ClientDTO> client =this.webClient.build().get().uri("/client/{id}", clientId)
                 .retrieve().bodyToMono(ClientDTO.class);
+        LOGGER.info("Consulted client from the bank-account-service");
         return client;
     }
+
+    @Override
+    public Mono<BankAccount> validateRegister(BankAccount bankAccount) {
+        return this.webClient.build().get().uri("/client/{id}", bankAccount.getCustomerId())
+            .retrieve()
+            .bodyToMono(ClientDTO.class)
+            .flatMap(dc -> {
+                if (dc.getType().equals("personal")) {
+                    return findByCAndT(bankAccount.getCustomerId(), bankAccount.getType())
+                        .flatMap(x-> {
+                            LOGGER.error("ya existe este tipo de cuenta bancaria para este cliente");
+                            throw new RuntimeException("ya existe este tipo de cuenta bancaria para este cliente");
+                        });
+                } else {
+                    return this.accountTypeService.findById(bankAccount.getType()).filter(obj ->
+                        obj.getCode().equals("1") || obj.getCode().equals("2"))
+                            .flatMap(x-> {
+                                LOGGER.error("Cliente de tipo empresarial solo puede crear cuentas corrientes");
+                                throw new RuntimeException("Cliente de tipo empresarial solo puede crear cuentas corrientes");
+                            });
+                }
+
+            });
+    }
+
+//        LOGGER.info("validateClientPersonal");
+//        return client.handle((c, validClientEmpType) -> {
+//            if (c.getType().equals("personal") & bam != null ) {
+//                LOGGER.error("ya existe este tipo de cuenta bancaria para este cliente");
+//                validClientEmpType.error( new RuntimeException("validacion 1"));
+//            } else {
+//                LOGGER.info("validateClientPersonal ok");
+//                validClientEmpType.next(c);
+//            }
+//        });
+//    }
 
     /*
     public Mono<ClientDTO> validateClientPersonal(Mono<ClientDTO> client, String customerId, String type){
@@ -110,4 +151,15 @@ public class BankAccountServiceImpl implements BankAccountService {
         return this.bankAccountRepository.findByCustomerIdAndType(
                 customerId, type);
     }
+
+    public Mono<BankAccount> findByCAndT(String customerId, String type){
+        LOGGER.info("validateBankAccount");
+        Flux<BankAccount> baf = this.bankAccountRepository.findByCustomerIdAndType(
+                customerId, type);
+        Mono<BankAccount> bam = baf.next();
+        return bam;
+    }
+
+
+
 }

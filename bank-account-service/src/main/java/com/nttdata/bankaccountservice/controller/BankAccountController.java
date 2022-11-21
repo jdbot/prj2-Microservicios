@@ -3,6 +3,8 @@ package com.nttdata.bankaccountservice.controller;
 import com.nttdata.bankaccountservice.document.BankAccount;
 import com.nttdata.bankaccountservice.dto.ClientDTO;
 import com.nttdata.bankaccountservice.service.BankAccountService;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,7 +40,7 @@ public class BankAccountController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<BankAccount> register(@RequestBody BankAccount bankAccount) {
-        return bankAccountService.register(bankAccount);
+        return bankAccountService.validateRegister(bankAccount);
     }
 
     //Method to update a bank account
@@ -64,6 +66,7 @@ public class BankAccountController {
 
     @GetMapping("/findClientById/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @CircuitBreaker(name="client", fallbackMethod = "fallBackGetFindByClientId")
     public Mono<ClientDTO> findByClientId(@PathVariable("id") String id) {
         return bankAccountService.findClientById(id);
     }
@@ -73,6 +76,10 @@ public class BankAccountController {
     public Flux<BankAccount> findByCustomerIdAndType(@PathVariable("id") String customerId,
                                                      @PathVariable("type") String type) {
         return bankAccountService.findByCustomerIdAndType(customerId, type);
+    }
+
+    public Mono<String> fallBackGetFindByClientId(String id, RuntimeException runtimeException){
+        return Mono.just("Microservicio Client no esta respondiendo");
     }
 
 }

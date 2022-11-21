@@ -24,7 +24,10 @@ public interface BankAccountService {
     Mono<Boolean> existsById(String id);
 
     Mono<ClientDTO> findClientById(String clientId);
+
     Flux<BankAccount> findByCustomerIdAndType(String customerId, String type);
+
+    Mono<BankAccount> validateRegister(BankAccount bankAccount);
 
 
 }
