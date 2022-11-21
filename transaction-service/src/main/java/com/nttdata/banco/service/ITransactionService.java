@@ -23,5 +23,5 @@ public interface ITransactionService {
 
     public Flux<Transaction> findTransactionsByAccountId(String idAccount);
 
-    public Flux<AmountAvgDto> makeAmountAvgReport(String idClient);
+    public Flux<Transaction> makeAmountAvgReport(String idClient);
 }

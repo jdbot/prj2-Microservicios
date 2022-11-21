@@ -9,6 +9,11 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
+
 /**
  * Transaction service implementation.
  */
@@ -48,8 +53,11 @@ public class TransactionServiceImpl implements ITransactionService {
     }
 
     @Override
-    public Flux<AmountAvgDto> makeAmountAvgReport(String idClient) {
-        return null;
+    public Flux<Transaction> makeAmountAvgReport(String idClient) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        YearMonth monthYear = YearMonth.now();
+        return transactionRepository.findAllByIdClient(idClient).filter(x ->
+                YearMonth.from(LocalDate.parse(x.getTransactionDate(), formatter)).equals(monthYear));
     }
 
 

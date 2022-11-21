@@ -70,4 +70,10 @@ public class TransactionController {
     public Flux<Transaction> findTransactionsByAccountId(@PathVariable("id") String accountId) {
         return transactionService.findTransactionsByAccountId(accountId);
     }
+
+    @GetMapping("/client/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Flux<Transaction> makeAmountAvgReport(@PathVariable("id") String clientId) {
+        return transactionService.makeAmountAvgReport(clientId);
+    }
 }
