@@ -1,6 +1,5 @@
 package com.nttdata.banco.service.implementation;
 
-import com.nttdata.banco.dto.AmountAvgDto;
 import com.nttdata.banco.model.Transaction;
 import com.nttdata.banco.repository.TransactionRepository;
 import com.nttdata.banco.service.ITransactionService;
@@ -12,6 +11,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -53,11 +53,12 @@ public class TransactionServiceImpl implements ITransactionService {
     }
 
     @Override
-    public Flux<Transaction> makeAmountAvgReport(String idClient) {
+    public Mono<Map<String, Double>> makeAmountAvgReport(String idClient) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         YearMonth monthYear = YearMonth.now();
         return transactionRepository.findAllByIdClient(idClient).filter(x ->
-                YearMonth.from(LocalDate.parse(x.getTransactionDate(), formatter)).equals(monthYear));
+                YearMonth.from(LocalDate.parse(x.getTransactionDate(), formatter)).equals(monthYear)).
+                collect(Collectors.groupingBy(Transaction::getIdAccount,Collectors.averagingDouble(Transaction::getAccountAmount)));
     }
 
 

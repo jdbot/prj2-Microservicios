@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
+
+import java.util.Map;
 
 /**
  * Controller of Transaction.
@@ -73,7 +76,7 @@ public class TransactionController {
 
     @GetMapping("/client/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Flux<Transaction> makeAmountAvgReport(@PathVariable("id") String clientId) {
+    public Mono<Map<String, Double>> makeAmountAvgReport(@PathVariable("id") String clientId) {
         return transactionService.makeAmountAvgReport(clientId);
     }
 }

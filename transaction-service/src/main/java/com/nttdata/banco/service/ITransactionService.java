@@ -1,9 +1,10 @@
 package com.nttdata.banco.service;
 
-import com.nttdata.banco.dto.AmountAvgDto;
 import com.nttdata.banco.model.Transaction;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Map;
 
 /**
  * Transaction service interface.
@@ -23,5 +24,5 @@ public interface ITransactionService {
 
     public Flux<Transaction> findTransactionsByAccountId(String idAccount);
 
-    public Flux<Transaction> makeAmountAvgReport(String idClient);
+    public Mono<Map<String, Double>> makeAmountAvgReport(String idClient);
 }
