@@ -1,0 +1,107 @@
+version: '3'
+
+services:
+  config-server:
+    image: config-server
+    container_name: config-server
+    build: ./config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - ms-bank
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/client-service/dev"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  eureka-server:
+    image: eureka-server
+    container_name: eureka-server
+    build: ./eureka-server
+    ports:
+      - "8761:8761"
+    links:
+      - config-server
+    depends_on:
+      config-server:
+        condition: service_healthy
+    networks:
+      - ms-bank
+  api-gateway:
+    image: api-gateway
+    container_name: api-gateway
+    build: ./api-gateway
+    ports:
+      - "8090:8090"
+    links:
+      - config-server
+    depends_on:
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    networks:
+      - ms-bank
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    hostname: mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - ms-bank
+  client-service:
+    image: client-service
+    container_name: client-service
+    build: ./client-service
+    links:
+      - mongodb
+    depends_on:
+      mongodb:
+        condition: service_started
+      api-gateway:
+        condition: service_started
+    networks:
+      - ms-bank
+  bank-account-service:
+    image: bank-account-service
+    container_name: bank-account-service
+    build: ./bank-account-service
+    links:
+      - mongodb
+    depends_on:
+      mongodb:
+        condition: service_started
+      api-gateway:
+        condition: service_started
+    networks:
+      - ms-bank
+  bank-credit-service:
+    image: bank-credit-service
+    container_name: bank-credit-service
+    build: ./bank-credit-service
+    links:
+      - mongodb
+    depends_on:
+      mongodb:
+        condition: service_started
+      api-gateway:
+        condition: service_started
+    networks:
+      - ms-bank
+  transaction-service:
+    image: transaction-service
+    container_name: transaction-service
+    build: ./transaction-service
+    links:
+      - mongodb
+    depends_on:
+      mongodb:
+        condition: service_started
+      api-gateway:
+        condition: service_started
+    networks:
+      - ms-bank
+
+networks:
+  ms-bank:
